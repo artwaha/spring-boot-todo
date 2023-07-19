@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/todo-db   # Replace with your database URL
+    username: postgres                            # Replace with your database username
+    password: 206207                           # Replace with your database password
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      #            ddl-auto: create                                 # Use 'update' to update the schema, 'create' to recreate it on every start (for development), or 'validate' for production
+      ddl-auto: update                                 # Use 'update' to update the schema, 'create' to recreate it on every start (for development), or 'validate' for production
+    properties:
+      hibernate:
+        format_sql: true                              # Enable pretty SQL logging
+        show_sql: true                                # Enable SQL logging
+        use_sql_comments: true                        # Enable SQL comments
+  security:
+    user:
+      name: mustard
+      password: 206207
