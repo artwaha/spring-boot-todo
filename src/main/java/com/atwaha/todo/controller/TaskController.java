@@ -12,19 +12,21 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/tasks")
 @RequiredArgsConstructor
+//TODO: CORS
+@CrossOrigin(origins = "http://localhost:3000")
 public class TaskController {
     private final TaskService taskService;
 
-    @GetMapping("hello-world")
-    Task helloWorld() {
-        return new Task();
-    }
 
-    //    All Tasks or Task Details
-    @GetMapping
-    ResponseEntity<List<Task>> fetchTasks(@RequestParam(value = "id", required = false) Long taskId) {
-        return taskService.fetchTasks(taskId);
-    }
+//    @GetMapping("pending")
+//    ResponseEntity<List<Task>> getPendingTasks() {
+//        return taskService.getPendingTasks();
+//    }
+
+//    @GetMapping("done")
+//    ResponseEntity<List<Task>> getDoneTasks() {
+//        return taskService.getDoneTasks();
+//    }
 
     //    New Task
     @PostMapping
@@ -38,24 +40,34 @@ public class TaskController {
         return taskService.fetchUserTasks(userId);
     }
 
+    //    Task Details
     @GetMapping("{task-id}")
     ResponseEntity<Task> getTaskDetails(@PathVariable(value = "task-id") Long taskId) {
         return taskService.getTaskDetails(taskId);
     }
 
+    //    Count Tasks
     @GetMapping("users/{id}/count")
     ResponseEntity<TaskCount> countUserTasks(@PathVariable(value = "id") Long userId) {
         return taskService.countUserTasks(userId);
     }
 
+    //    Get All tasks for user
+    @GetMapping("users/{id}")
+    ResponseEntity<List<Task>> getAllTasks(@PathVariable(value = "id") Long userId) {
+        return taskService.getAllTasks(userId);
+    }
+
+    //    Done Tasks for User
     @GetMapping("users/{id}/done")
     ResponseEntity<List<Task>> fetchDoneTask(@PathVariable(value = "id") Long userId) {
-        return taskService.fetchDoneTask(userId);
+//        return taskService.fetchDoneTask(userId);
+        return taskService.getDoneTasks(userId);
     }
 
+    //    Pending Tasks for user
     @GetMapping("users/{id}/pending")
     ResponseEntity<List<Task>> fetchPendingTask(@PathVariable(value = "id") Long userId) {
-        return taskService.fetchPendingTask(userId);
+        return taskService.getPendingTasks(userId);
     }
-
 }

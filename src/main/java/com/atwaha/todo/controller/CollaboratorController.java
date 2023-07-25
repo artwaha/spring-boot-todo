@@ -11,6 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/collaborators")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class CollaboratorController {
     private final CollaboratorService collaboratorService;
 

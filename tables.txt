@@ -1,0 +1,28 @@
+   create table collaborators (
+        id bigserial not null,
+        task_id bigint,
+        user_id bigint,
+        invitation_status varchar(255) check (invitation_status in ('PENDING','ACCEPTED','REJECTED')),
+        primary key (id)
+    )
+
+     create table tasks (
+            is_completed boolean not null,
+            created_at timestamp(6),
+            created_by bigint not null,
+            id bigserial not null,
+            last_updated timestamp(6),
+            updated_by bigint,
+            description varchar(255),
+            priority varchar(255) check (priority in ('HIGH','LOW')),
+            title varchar(255),
+            primary key (id)
+        )
+
+        create table users (
+                id bigserial not null,
+                email varchar(255) unique,
+                name varchar(255),
+                password varchar(255),
+                primary key (id)
+            )

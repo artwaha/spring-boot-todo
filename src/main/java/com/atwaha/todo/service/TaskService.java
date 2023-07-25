@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 @RequiredArgsConstructor
 @Service
@@ -26,22 +25,6 @@ public class TaskService {
             task.setCreatedAt(LocalDateTime.now());
             task.setLastUpdated(LocalDateTime.now());
             return ResponseEntity.ok(taskRepository.save(task));
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    public ResponseEntity<List<Task>> fetchTasks(Long taskId) {
-        try {
-            if (taskId == null) {
-                return ResponseEntity.ok(taskRepository.findAll());
-            } else {
-                List<Task> taskById = new ArrayList<>();
-                Task task = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id"));
-                taskById.add(task);
-                return ResponseEntity.ok(taskById);
-            }
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.internalServerError().build();
@@ -63,31 +46,11 @@ public class TaskService {
         try {
             User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User ID"));
             Long all = taskRepository.countByCreatedBy(user);
-            Long done = taskRepository.countDoneTasks(userId);
-            Long pending = taskRepository.countPendingTasks(userId);
+            Long done = taskRepository.countByCreatedByAndIsCompletedTrue(user);
+            Long pending = taskRepository.countByCreatedByAndIsCompletedFalse(user);
 
             TaskCount taskCount = new TaskCount(all, done, pending);
             return ResponseEntity.ok(taskCount);
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    public ResponseEntity<List<Task>> fetchDoneTask(Long userId) {
-        try {
-            List<Task> doneTasks = taskRepository.findDoneTasks(userId);
-            return ResponseEntity.ok(doneTasks);
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    public ResponseEntity<List<Task>> fetchPendingTask(Long userId) {
-        try {
-            List<Task> pendingTasks = taskRepository.findPendingTasks(userId);
-            return ResponseEntity.ok(pendingTasks);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.internalServerError().build();
@@ -98,6 +61,39 @@ public class TaskService {
         try {
             Task taskDetails = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id"));
             return ResponseEntity.ok(taskDetails);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    public ResponseEntity<List<Task>> getAllTasks(Long userId) {
+        try {
+            User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid user Id"));
+            List<Task> allTasks = taskRepository.findAllByCreatedBy(user);
+            return ResponseEntity.ok(allTasks);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    public ResponseEntity<List<Task>> getPendingTasks(Long userId) {
+        try {
+            User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid user Id"));
+            List<Task> pendingTasks = taskRepository.findAllByCreatedByAndIsCompletedFalseOrderByPriorityAsc(user);
+            return ResponseEntity.ok(pendingTasks);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    public ResponseEntity<List<Task>> getDoneTasks(Long userId) {
+        try {
+            User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid user Id"));
+            List<Task> doneTasks = taskRepository.findAllByCreatedByAndIsCompletedTrueOrderByPriorityAsc(user);
+            return ResponseEntity.ok(doneTasks);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.internalServerError().build();
