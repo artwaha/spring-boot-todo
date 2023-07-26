@@ -23,4 +23,5 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     Long countByCreatedByAndIsCompletedFalse(User user);
 
+    boolean existsByIdAndCreatedBy(Long taskId, User byId);
 }
