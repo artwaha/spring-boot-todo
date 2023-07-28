@@ -15,16 +15,6 @@ import java.util.List;
 public class CollaboratorController {
     private final CollaboratorService collaboratorService;
 
-    @GetMapping("hello-world")
-    Collaborator helloWorld() {
-        return new Collaborator();
-    }
-
-    @GetMapping
-    ResponseEntity<List<Collaborator>> getCollaborators() {
-        return collaboratorService.getCollaborators();
-    }
-
     @PostMapping
     ResponseEntity<Collaborator> createCollaborator(@RequestBody Collaborator collaborator) {
         return collaboratorService.createCollaborator(collaborator);
@@ -32,9 +22,7 @@ public class CollaboratorController {
 
     //    Get Collaborators for task
     @GetMapping("tasks/{task-id}/users/{user-id}")
-    ResponseEntity<List<Collaborator>> getTaskCollaborators(
-            @PathVariable(value = "task-id") Long taskId,
-            @PathVariable(value = "user-id") Long userId) {
+    ResponseEntity<List<Collaborator>> getTaskCollaborators(@PathVariable(value = "task-id") Long taskId, @PathVariable(value = "user-id") Long userId) {
         return collaboratorService.getTaskCollaborators(taskId, userId);
     }
 }

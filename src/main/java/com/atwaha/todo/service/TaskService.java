@@ -1,5 +1,6 @@
 package com.atwaha.todo.service;
 
+import com.atwaha.todo.dao.CollaboratorRepository;
 import com.atwaha.todo.dao.TaskRepository;
 import com.atwaha.todo.dao.UserRepository;
 import com.atwaha.todo.model.Task;
@@ -7,11 +8,11 @@ import com.atwaha.todo.model.User;
 import com.atwaha.todo.model.dto.TaskCount;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -19,23 +20,13 @@ import java.util.List;
 public class TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final CollaboratorRepository collaboratorRepository;
 
     public ResponseEntity<Task> createTask(Task task) {
         try {
             task.setCreatedAt(LocalDateTime.now());
             task.setLastUpdated(LocalDateTime.now());
             return ResponseEntity.ok(taskRepository.save(task));
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    public ResponseEntity<List<Task>> fetchUserTasks(Long userId) {
-        try {
-            User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id"));
-            List<Task> tasksForUser = taskRepository.findByCreatedBy(user);
-            return ResponseEntity.ok(tasksForUser);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.internalServerError().build();
@@ -57,17 +48,28 @@ public class TaskService {
         }
     }
 
-    public ResponseEntity<Task> getTaskDetails(Long taskId) {
+    public ResponseEntity<Task> getTaskDetails(Long userId, Long taskId) {
         try {
-            Task taskDetails = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id"));
-            return ResponseEntity.ok(taskDetails);
+
+            User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id"));
+            Task task = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id"));
+//            Check if is owner
+            boolean isOwner = taskRepository.existsByIdAndCreatedBy(taskId, user);
+
+//            Check if collaborating
+            boolean isCollaborator = collaboratorRepository.existsByUserAndTask(user, task);
+
+            if (isOwner || isCollaborator)
+                return ResponseEntity.ok(task);
+            else
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
 
-    public ResponseEntity<List<Task>> getAllTasks(Long userId) {
+    public ResponseEntity<List<Task>> getAllTasksForUser(Long userId) {
         try {
             User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid user Id"));
             List<Task> allTasks = taskRepository.findAllByCreatedBy(user);

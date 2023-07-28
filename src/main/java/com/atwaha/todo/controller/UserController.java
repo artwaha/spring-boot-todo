@@ -17,6 +17,7 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
+    // All users
     @GetMapping()
     ResponseEntity<List<User>> getUsers() {
         return userService.getUsers();
@@ -34,10 +35,13 @@ public class UserController {
 
     //    Users to invite
     @GetMapping("{user-id}/tasks/{task-id}")
-    ResponseEntity<List<User>> getUsersToInvite(
-            @PathVariable(name = "user-id") Long userId,
-            @PathVariable(name = "task-id") Long taskId
-    ) {
+    ResponseEntity<List<User>> getUsersToInvite(@PathVariable(name = "user-id") Long userId, @PathVariable(name = "task-id") Long taskId) {
         return userService.getUsersToInvite(userId, taskId);
+    }
+
+    //    Pending Invitations
+    @GetMapping("{user-id}/tasks/{task-id}/pending")
+    ResponseEntity<List<User>> getPendingInvitations(@PathVariable(name = "user-id") Long userId, @PathVariable(name = "task-id") Long taskId) {
+        return userService.getPendingInvitations(userId, taskId);
     }
 }

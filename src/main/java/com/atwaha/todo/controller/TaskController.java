@@ -17,33 +17,16 @@ import java.util.List;
 public class TaskController {
     private final TaskService taskService;
 
-
-//    @GetMapping("pending")
-//    ResponseEntity<List<Task>> getPendingTasks() {
-//        return taskService.getPendingTasks();
-//    }
-
-//    @GetMapping("done")
-//    ResponseEntity<List<Task>> getDoneTasks() {
-//        return taskService.getDoneTasks();
-//    }
-
     //    New Task
     @PostMapping
     ResponseEntity<Task> createTask(@RequestBody Task task) {
         return taskService.createTask(task);
     }
 
-    //    Get Tasks for user
-    @GetMapping("users")
-    ResponseEntity<List<Task>> fetchUserTasks(@RequestParam(value = "id") Long userId) {
-        return taskService.fetchUserTasks(userId);
-    }
-
-    //    Task Details
-    @GetMapping("{task-id}")
-    ResponseEntity<Task> getTaskDetails(@PathVariable(value = "task-id") Long taskId) {
-        return taskService.getTaskDetails(taskId);
+    //    Task Details( User can only view Task Details of Tasks he created only and Collaborating
+    @GetMapping("{task-id}/users/{user-id}")
+    ResponseEntity<Task> getTaskDetails(@PathVariable(value = "user-id") Long userId, @PathVariable(value = "task-id") Long taskId) {
+        return taskService.getTaskDetails(userId, taskId);
     }
 
     //    Count Tasks
@@ -54,14 +37,13 @@ public class TaskController {
 
     //    Get All tasks for user
     @GetMapping("users/{id}")
-    ResponseEntity<List<Task>> getAllTasks(@PathVariable(value = "id") Long userId) {
-        return taskService.getAllTasks(userId);
+    ResponseEntity<List<Task>> getAllTasksForUser(@PathVariable(value = "id") Long userId) {
+        return taskService.getAllTasksForUser(userId);
     }
 
     //    Done Tasks for User
     @GetMapping("users/{id}/done")
-    ResponseEntity<List<Task>> fetchDoneTask(@PathVariable(value = "id") Long userId) {
-//        return taskService.fetchDoneTask(userId);
+    ResponseEntity<List<Task>> getDoneTask(@PathVariable(value = "id") Long userId) {
         return taskService.getDoneTasks(userId);
     }
 

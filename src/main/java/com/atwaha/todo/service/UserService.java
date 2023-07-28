@@ -6,6 +6,7 @@ import com.atwaha.todo.model.Collaborator;
 import com.atwaha.todo.model.User;
 import com.atwaha.todo.model.dto.LoginRequestDTO;
 import com.atwaha.todo.model.dto.UserResponseDTO;
+import jakarta.annotation.Nonnull;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,8 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     //    Transform User to UserResponseDTO
-    private UserResponseDTO createUserResponseDTO(User user) {
+    @Nonnull
+    private UserResponseDTO createUserResponseDTO(@Nonnull User user) {
         UserResponseDTO userResponseDTO = new UserResponseDTO();
         userResponseDTO.setId(user.getId());
         userResponseDTO.setName(user.getName());
@@ -85,32 +87,27 @@ public class UserService {
     public ResponseEntity<List<User>> getUsersToInvite(Long userId, Long taskId) {
         try {
 //            Check if is the owner of the task
-            boolean isTaskOwner = taskRepository
-                    .existsByIdAndCreatedBy(
-                            taskId,
-                            userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id"))
-                    );
+            boolean isTaskOwner = taskRepository.existsByIdAndCreatedBy(taskId, userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id")));
 
             if (isTaskOwner) {
                 List<Collaborator> collaborators = collaboratorService.getTaskCollaborators(taskId, userId).getBody();
                 List<Long> collaboratingUserIds = new ArrayList<>();
 
                 if (collaborators != null && !collaborators.isEmpty()) {
-                    collaboratingUserIds = collaborators
-                            .stream()
-                            .map(collaborator -> collaborator.getUser().getId())
-                            .collect(Collectors.toList());
+                    collaboratingUserIds = collaborators.stream().map(collaborator -> collaborator.getUser().getId()).collect(Collectors.toList());
                 }
 //                Adding owner into the exclusion list
                 collaboratingUserIds.add(userId);
                 List<User> usersToInvite = userRepository.findByIdNotIn(collaboratingUserIds);
                 return ResponseEntity.ok(usersToInvite);
-            } else
-                throw new Exception("User must be task owner in order to request for users to invite");
+            } else throw new Exception("User must be task owner in order to request for users to invite");
         } catch (Exception e) {
             System.err.println("User Service: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
-}
 
+    public ResponseEntity<List<User>> getPendingInvitations(Long userId, Long taskId) {
+        return null;
+    }
+}

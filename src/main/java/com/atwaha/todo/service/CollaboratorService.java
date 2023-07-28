@@ -45,25 +45,13 @@ public class CollaboratorService {
 
     public ResponseEntity<List<Collaborator>> getTaskCollaborators(Long taskId, Long userId) {
         try {
-            List<Collaborator> collaborators =
-                    collaboratorRepository
-                            .findAllByTaskAndUserNotAndInvitationStatusNot(
-                                    taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id")),
-                                    userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id")),
-                                    InvitationStatus.REJECTED
-                            );
+            List<Collaborator> collaborators = collaboratorRepository.findAllByTaskAndUserNotAndInvitationStatusNot(
+                    taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id")),
+                    userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id")),
+                    InvitationStatus.REJECTED);
             return ResponseEntity.ok(collaborators);
         } catch (Exception e) {
             System.err.println("Collaborator Service: " + e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    public ResponseEntity<List<Collaborator>> getCollaborators() {
-        try {
-            return ResponseEntity.ok(collaboratorRepository.findAll());
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
