@@ -4,6 +4,7 @@ import com.atwaha.todo.dao.CollaboratorRepository;
 import com.atwaha.todo.dao.TaskRepository;
 import com.atwaha.todo.dao.UserRepository;
 import com.atwaha.todo.model.Collaborator;
+import com.atwaha.todo.model.Task;
 import com.atwaha.todo.model.User;
 import com.atwaha.todo.model.dto.LoginRequestDTO;
 import com.atwaha.todo.model.dto.UserResponseDTO;
@@ -113,13 +114,18 @@ public class UserService {
 
     public ResponseEntity<List<User>> getUsersToInvite(Long userId, Long taskId) {
         try {
-            boolean taskExistsInCollaborators = collaboratorRepository.existsByTask(
-                    taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id"))
-            );
+            Task task = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id"));
+            boolean taskExistsInCollaborators = collaboratorRepository.existsByTask(task);
+            List<User> usersToInvite;
             if (taskExistsInCollaborators) {
-                return ResponseEntity.ok(new ArrayList<>());
+                usersToInvite = userRepository
+                        .findAllByIdNot(userId)
+                        .stream()
+                        .filter(user -> !collaboratorRepository.existsByUserAndTask(user, task))
+                        .toList();
+            } else {
+                usersToInvite = userRepository.findAllByIdNot(userId);
             }
-            List<User> usersToInvite = userRepository.findAllByIdNot(userId);
             return ResponseEntity.ok(usersToInvite);
         } catch (Exception e) {
             System.err.println("User Service: " + e.getMessage());
