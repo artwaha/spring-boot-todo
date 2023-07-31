@@ -11,5 +11,7 @@ import java.util.List;
 public interface CollaboratorRepository extends JpaRepository<Collaborator, Long> {
     boolean existsByUserAndTask(User user, Task task);
 
-    List<Collaborator> findAllByTaskAndUserNotAndInvitationStatusNot(Task task, User user, InvitationStatus invitationStatus);
+    List<Collaborator> findAllByTaskAndUserNotAndInvitationStatus(Task task, User user, InvitationStatus invitationStatus);
+
+    boolean existsByTask(Task task);
 }

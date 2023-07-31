@@ -36,6 +36,7 @@ public class UserController {
     //    Users to invite
     @GetMapping("{user-id}/tasks/{task-id}")
     ResponseEntity<List<User>> getUsersToInvite(@PathVariable(name = "user-id") Long userId, @PathVariable(name = "task-id") Long taskId) {
+//        return userService.getUsersToInvite(userId, taskId);
         return userService.getUsersToInvite(userId, taskId);
     }
 

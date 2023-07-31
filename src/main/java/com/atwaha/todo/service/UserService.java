@@ -1,11 +1,13 @@
 package com.atwaha.todo.service;
 
+import com.atwaha.todo.dao.CollaboratorRepository;
 import com.atwaha.todo.dao.TaskRepository;
 import com.atwaha.todo.dao.UserRepository;
 import com.atwaha.todo.model.Collaborator;
 import com.atwaha.todo.model.User;
 import com.atwaha.todo.model.dto.LoginRequestDTO;
 import com.atwaha.todo.model.dto.UserResponseDTO;
+import com.atwaha.todo.model.enums.InvitationStatus;
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -16,13 +18,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
+    private final CollaboratorRepository collaboratorRepository;
     private final CollaboratorService collaboratorService;
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -84,30 +86,44 @@ public class UserService {
     }
 
     //    User tp invite: not owner of the task neither collaborator
+
+    public ResponseEntity<List<User>> getPendingInvitations(Long userId, Long taskId) {
+        try {
+            List<Collaborator> pendingCollaborators = collaboratorRepository.findAllByTaskAndUserNotAndInvitationStatus(
+                    taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id")),
+                    userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id")),
+                    InvitationStatus.PENDING);
+
+            if (pendingCollaborators.isEmpty()) {
+                return ResponseEntity.ok(new ArrayList<>());
+            }
+
+            List<Long> pendingUserIds = pendingCollaborators
+                    .stream()
+                    .map(user -> user.getUser().getId())
+                    .toList();
+
+            List<User> pendingUsers = userRepository.findAllByIdIn(pendingUserIds);
+            return ResponseEntity.ok(pendingUsers);
+        } catch (Exception e) {
+            System.err.println("Collaborator Service: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     public ResponseEntity<List<User>> getUsersToInvite(Long userId, Long taskId) {
         try {
-//            Check if is the owner of the task
-            boolean isTaskOwner = taskRepository.existsByIdAndCreatedBy(taskId, userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id")));
-
-            if (isTaskOwner) {
-                List<Collaborator> collaborators = collaboratorService.getTaskCollaborators(taskId, userId).getBody();
-                List<Long> collaboratingUserIds = new ArrayList<>();
-
-                if (collaborators != null && !collaborators.isEmpty()) {
-                    collaboratingUserIds = collaborators.stream().map(collaborator -> collaborator.getUser().getId()).collect(Collectors.toList());
-                }
-//                Adding owner into the exclusion list
-                collaboratingUserIds.add(userId);
-                List<User> usersToInvite = userRepository.findByIdNotIn(collaboratingUserIds);
-                return ResponseEntity.ok(usersToInvite);
-            } else throw new Exception("User must be task owner in order to request for users to invite");
+            boolean taskExistsInCollaborators = collaboratorRepository.existsByTask(
+                    taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id"))
+            );
+            if (taskExistsInCollaborators) {
+                return ResponseEntity.ok(new ArrayList<>());
+            }
+            List<User> usersToInvite = userRepository.findAllByIdNot(userId);
+            return ResponseEntity.ok(usersToInvite);
         } catch (Exception e) {
             System.err.println("User Service: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
-    }
-
-    public ResponseEntity<List<User>> getPendingInvitations(Long userId, Long taskId) {
-        return null;
     }
 }
