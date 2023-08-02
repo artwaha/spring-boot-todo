@@ -125,7 +125,6 @@ public class TaskService {
 
                 task.setLastUpdated(LocalDateTime.now());
                 task.setUpdatedBy(user);
-
                 Task savedTask = taskRepository.save(task);
 
                 return ResponseEntity.ok(savedTask);
