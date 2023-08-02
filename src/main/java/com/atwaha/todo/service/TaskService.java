@@ -101,4 +101,40 @@ public class TaskService {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    public ResponseEntity<Task> updateTask(Long userId, Long taskId, Task updatedTask) {
+        try {
+//            check if user is owner or collaborator
+            User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid user Id"));
+            Task task = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id"));
+            boolean isTaskOwner = taskRepository.existsByIdAndCreatedBy(taskId, user);
+            boolean isTaskCollaborator = collaboratorRepository.existsByUserAndTask(user, task);
+
+            if (isTaskOwner || isTaskCollaborator) {
+                if (updatedTask.getTitle() != null) {
+                    task.setTitle(updatedTask.getTitle());
+                }
+                if (updatedTask.getDescription() != null) {
+                    task.setDescription(updatedTask.getDescription());
+                }
+                if (updatedTask.getPriority() != null) {
+                    task.setPriority(updatedTask.getPriority());
+                }
+
+                task.setCompleted(updatedTask.isCompleted());
+
+                task.setLastUpdated(LocalDateTime.now());
+                task.setUpdatedBy(user);
+
+                Task savedTask = taskRepository.save(task);
+
+                return ResponseEntity.ok(savedTask);
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }

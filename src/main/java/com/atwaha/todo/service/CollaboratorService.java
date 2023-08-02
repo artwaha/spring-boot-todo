@@ -6,6 +6,7 @@ import com.atwaha.todo.dao.UserRepository;
 import com.atwaha.todo.model.Collaborator;
 import com.atwaha.todo.model.Task;
 import com.atwaha.todo.model.User;
+import com.atwaha.todo.model.dto.CollaboratorRequest;
 import com.atwaha.todo.model.enums.InvitationStatus;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +23,11 @@ public class CollaboratorService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
-    public ResponseEntity<Collaborator> createCollaborator(Collaborator collaborator) {
+    public ResponseEntity<Collaborator> createCollaborator(CollaboratorRequest collaborator) {
         try {
-            Long taskId = collaborator.getTask().getId();
-            User user = collaborator.getUser();
-            Task task = collaborator.getTask();
+            Long taskId = collaborator.getTaskId();
+            User user = userRepository.findById(collaborator.getUserId()).orElseThrow(() -> new EntityNotFoundException("User Id Invalid"));
+            Task task = taskRepository.findById(collaborator.getTaskId()).orElseThrow(() -> new EntityNotFoundException("Task Id Invalid"));
 
 //            User cant be collaborator of a task which he created
             Task invalidTask = taskRepository.findByIdAndCreatedBy(taskId, user);
@@ -35,8 +36,10 @@ public class CollaboratorService {
             if (invalidTask != null || collaboratorExists)
                 throw new Exception("Invalid Collaborator: User is the owner of the Task");
 
-            Collaborator newCollaborator = collaboratorRepository.save(collaborator);
-            return ResponseEntity.status(HttpStatus.CREATED).body(newCollaborator);
+            Collaborator newCollaborator = new Collaborator();
+            newCollaborator.setUser(user);
+            newCollaborator.setTask(task);
+            return ResponseEntity.status(HttpStatus.CREATED).body(collaboratorRepository.save(newCollaborator));
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.internalServerError().build();

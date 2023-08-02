@@ -23,6 +23,11 @@ public class TaskController {
         return taskService.createTask(task);
     }
 
+    @PutMapping("{task-id}/users/{user-id}")
+    ResponseEntity<Task> updateTask(@RequestBody Task task, @PathVariable(value = "task-id") Long taskId, @PathVariable(value = "user-id") Long userId) {
+        return taskService.updateTask(userId, taskId, task);
+    }
+
     //    Task Details( User can only view Task Details of Tasks he created only and Collaborating
     @GetMapping("{task-id}/users/{user-id}")
     ResponseEntity<Task> getTaskDetails(@PathVariable(value = "user-id") Long userId, @PathVariable(value = "task-id") Long taskId) {

@@ -1,6 +1,7 @@
 package com.atwaha.todo.controller;
 
 import com.atwaha.todo.model.Collaborator;
+import com.atwaha.todo.model.dto.CollaboratorRequest;
 import com.atwaha.todo.service.CollaboratorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,13 @@ import java.util.List;
 public class CollaboratorController {
     private final CollaboratorService collaboratorService;
 
+//    @PostMapping
+//    ResponseEntity<Collaborator> createCollaborator(@RequestBody Collaborator collaborator) {
+//        return collaboratorService.createCollaborator(collaborator);
+//    }
+
     @PostMapping
-    ResponseEntity<Collaborator> createCollaborator(@RequestBody Collaborator collaborator) {
+    ResponseEntity<Collaborator> createCollaborator(@RequestBody CollaboratorRequest collaborator) {
         return collaboratorService.createCollaborator(collaborator);
     }
 
