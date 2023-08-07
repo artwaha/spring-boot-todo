@@ -14,4 +14,6 @@ public interface CollaboratorRepository extends JpaRepository<Collaborator, Long
     List<Collaborator> findAllByTaskAndUserNotAndInvitationStatus(Task task, User user, InvitationStatus invitationStatus);
 
     boolean existsByTask(Task task);
+
+    Collaborator findByUserAndTask(User user, Task task);
 }

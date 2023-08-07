@@ -121,7 +121,9 @@ public class TaskService {
                     task.setPriority(updatedTask.getPriority());
                 }
 
-                task.setCompleted(updatedTask.isCompleted());
+                if (updatedTask.getIsCompleted() != null) {
+                    task.setIsCompleted(updatedTask.getIsCompleted());
+                }
 
                 task.setLastUpdated(LocalDateTime.now());
                 task.setUpdatedBy(user);

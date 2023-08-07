@@ -16,11 +16,7 @@ import java.util.List;
 public class CollaboratorController {
     private final CollaboratorService collaboratorService;
 
-//    @PostMapping
-//    ResponseEntity<Collaborator> createCollaborator(@RequestBody Collaborator collaborator) {
-//        return collaboratorService.createCollaborator(collaborator);
-//    }
-
+    //    Create Collaborator / invite user
     @PostMapping
     ResponseEntity<Collaborator> createCollaborator(@RequestBody CollaboratorRequest collaborator) {
         return collaboratorService.createCollaborator(collaborator);
@@ -30,5 +26,17 @@ public class CollaboratorController {
     @GetMapping("tasks/{task-id}/users/{user-id}")
     ResponseEntity<List<Collaborator>> getTaskCollaborators(@PathVariable(value = "task-id") Long taskId, @PathVariable(value = "user-id") Long userId) {
         return collaboratorService.getTaskCollaborators(taskId, userId);
+    }
+
+    //    Remove Collaborator
+    @PatchMapping("remove")
+    ResponseEntity<Collaborator> removeCollaborator(@RequestBody CollaboratorRequest collaborator) {
+        return collaboratorService.removeCollaborator(collaborator);
+    }
+
+    //    Remove pending invitation
+    @PatchMapping("pending-invitation/remove")
+    ResponseEntity<Collaborator> removePendingInvitation(@RequestBody CollaboratorRequest collaborator) {
+        return collaboratorService.removeCollaborator(collaborator);
     }
 }

@@ -58,4 +58,23 @@ public class CollaboratorService {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    public ResponseEntity<Collaborator> removeCollaborator(CollaboratorRequest collaborator) {
+        try {
+            User user = userRepository.findById(collaborator.getUserId()).orElseThrow(() -> new EntityNotFoundException("User Id Invalid"));
+            Task task = taskRepository.findById(collaborator.getTaskId()).orElseThrow(() -> new EntityNotFoundException("Task Id Invalid"));
+            Collaborator existingCollaborator = collaboratorRepository.findByUserAndTask(user, task);
+            if (existingCollaborator != null) {
+                existingCollaborator.setInvitationStatus(InvitationStatus.REJECTED);
+                Collaborator updatedCollaborator = collaboratorRepository.save(existingCollaborator);
+                return ResponseEntity.ok(updatedCollaborator);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+        } catch (Exception e) {
+            System.err.println("Collaborator Service: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 }
