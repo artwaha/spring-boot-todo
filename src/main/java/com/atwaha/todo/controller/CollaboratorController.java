@@ -29,6 +29,7 @@ public class CollaboratorController {
     }
 
     //    Remove Collaborator
+//    TODO handle multiple
     @PatchMapping("remove")
     ResponseEntity<Collaborator> removeCollaborator(@RequestBody CollaboratorRequest collaborator) {
         return collaboratorService.removeCollaborator(collaborator);
