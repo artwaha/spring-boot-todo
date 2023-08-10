@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -59,22 +60,55 @@ public class CollaboratorService {
         }
     }
 
-    public ResponseEntity<Collaborator> removeCollaborator(CollaboratorRequest collaborator) {
+    public ResponseEntity<List<Collaborator>> removeCollaborator(List<CollaboratorRequest> collaborators) {
         try {
-            User user = userRepository.findById(collaborator.getUserId()).orElseThrow(() -> new EntityNotFoundException("User Id Invalid"));
-            Task task = taskRepository.findById(collaborator.getTaskId()).orElseThrow(() -> new EntityNotFoundException("Task Id Invalid"));
-            Collaborator existingCollaborator = collaboratorRepository.findByUserAndTask(user, task);
-            if (existingCollaborator != null) {
-                existingCollaborator.setInvitationStatus(InvitationStatus.REJECTED);
-                Collaborator updatedCollaborator = collaboratorRepository.save(existingCollaborator);
-                return ResponseEntity.ok(updatedCollaborator);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
+
+            List<Collaborator> response = new ArrayList<>();
+
+            collaborators.forEach(collaborator -> {
+                User user = userRepository.findById(collaborator.getUserId()).orElseThrow(() -> new EntityNotFoundException("User Id Invalid"));
+                Task task = taskRepository.findById(collaborator.getTaskId()).orElseThrow(() -> new EntityNotFoundException("Task Id Invalid"));
+                Collaborator existingCollaborator = collaboratorRepository.findByUserAndTask(user, task);
+                if (existingCollaborator != null) {
+                    existingCollaborator.setInvitationStatus(InvitationStatus.REJECTED);
+                    Collaborator updatedCollaborator = collaboratorRepository.save(existingCollaborator);
+                    response.add(updatedCollaborator);
+                }
+            });
+
+            return
+                    response.isEmpty() ? ResponseEntity.badRequest().build() : ResponseEntity.ok(response);
         } catch (Exception e) {
             System.err.println("Collaborator Service: " + e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
 
+    public ResponseEntity<List<Collaborator>> inviteUsers(List<CollaboratorRequest> usersToInvite) {
+        try {
+            List<Collaborator> response = new ArrayList<>();
+
+            usersToInvite.forEach(userToInvite -> {
+                User user = userRepository.findById(userToInvite.getUserId()).orElseThrow(() -> new EntityNotFoundException("User Id Invalid"));
+                Task task = taskRepository.findById(userToInvite.getTaskId()).orElseThrow(() -> new EntityNotFoundException("Task Id Invalid"));
+                //            User cant be collaborator of a task which he created
+                boolean invalidTask = taskRepository.existsByIdAndCreatedBy(userToInvite.getTaskId(), user);
+                boolean collaboratorExists = collaboratorRepository.existsByUserAndTask(user, task);
+
+                if (!invalidTask && !collaboratorExists) {
+                    Collaborator newCollaborator = new Collaborator();
+                    newCollaborator.setUser(user);
+                    newCollaborator.setTask(task);
+                    Collaborator savedCollaborator = collaboratorRepository.save(newCollaborator);
+                    response.add(savedCollaborator);
+                }
+            });
+
+            return
+                    response.isEmpty() ? ResponseEntity.badRequest().build() : ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("Collaborator Service: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }

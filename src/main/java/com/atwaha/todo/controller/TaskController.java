@@ -57,4 +57,10 @@ public class TaskController {
     ResponseEntity<List<Task>> fetchPendingTask(@PathVariable(value = "id") Long userId) {
         return taskService.getPendingTasks(userId);
     }
+
+    //    Invitations
+    @GetMapping("users/{id}/invitations")
+    ResponseEntity<List<Task>> getInvitations(@PathVariable(value = "id") Long userId) {
+        return taskService.getInvitations(userId);
+    }
 }

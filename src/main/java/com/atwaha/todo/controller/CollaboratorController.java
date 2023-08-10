@@ -22,6 +22,12 @@ public class CollaboratorController {
         return collaboratorService.createCollaborator(collaborator);
     }
 
+    @PatchMapping("invite")
+    ResponseEntity<List<Collaborator>> inviteCollaborators(@RequestBody List<CollaboratorRequest> usersToInvite) {
+//        return collaboratorService.createCollaborator(collaborator);
+        return collaboratorService.inviteUsers(usersToInvite);
+    }
+
     //    Get Collaborators for task
     @GetMapping("tasks/{task-id}/users/{user-id}")
     ResponseEntity<List<Collaborator>> getTaskCollaborators(@PathVariable(value = "task-id") Long taskId, @PathVariable(value = "user-id") Long userId) {
@@ -31,13 +37,13 @@ public class CollaboratorController {
     //    Remove Collaborator
 //    TODO handle multiple
     @PatchMapping("remove")
-    ResponseEntity<Collaborator> removeCollaborator(@RequestBody CollaboratorRequest collaborator) {
-        return collaboratorService.removeCollaborator(collaborator);
+    ResponseEntity<List<Collaborator>> removeCollaborator(@RequestBody List<CollaboratorRequest> collaborators) {
+        return collaboratorService.removeCollaborator(collaborators);
     }
 
     //    Remove pending invitation
     @PatchMapping("pending-invitation/remove")
-    ResponseEntity<Collaborator> removePendingInvitation(@RequestBody CollaboratorRequest collaborator) {
-        return collaboratorService.removeCollaborator(collaborator);
+    ResponseEntity<List<Collaborator>> removePendingInvitation(@RequestBody List<CollaboratorRequest> collaboratorS) {
+        return collaboratorService.removeCollaborator(collaboratorS);
     }
 }
