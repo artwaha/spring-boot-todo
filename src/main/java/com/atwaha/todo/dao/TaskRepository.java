@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
-    List<Task> findByCreatedBy(User user);
 
     Task findByIdAndCreatedBy(Long taskId, User user);
 
@@ -24,4 +23,5 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     Long countByCreatedByAndIsCompletedFalse(User user);
 
     boolean existsByIdAndCreatedBy(Long taskId, User byId);
+
 }

@@ -21,10 +21,9 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private Priority priority = Priority.LOW;
 
-    private boolean isCompleted;
+    private Boolean isCompleted;
     private LocalDateTime createdAt;
 
-    //    @OneToMany
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;

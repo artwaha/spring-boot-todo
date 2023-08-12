@@ -11,4 +11,5 @@ public class TaskCount {
     private Long all;
     private Long done;
     private Long pending;
+    private Long invitations;
 }

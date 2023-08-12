@@ -3,9 +3,11 @@ package com.atwaha.todo.service;
 import com.atwaha.todo.dao.CollaboratorRepository;
 import com.atwaha.todo.dao.TaskRepository;
 import com.atwaha.todo.dao.UserRepository;
+import com.atwaha.todo.model.Collaborator;
 import com.atwaha.todo.model.Task;
 import com.atwaha.todo.model.User;
 import com.atwaha.todo.model.dto.TaskCount;
+import com.atwaha.todo.model.enums.InvitationStatus;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,8 +41,9 @@ public class TaskService {
             Long all = taskRepository.countByCreatedBy(user);
             Long done = taskRepository.countByCreatedByAndIsCompletedTrue(user);
             Long pending = taskRepository.countByCreatedByAndIsCompletedFalse(user);
+            Long invitations = collaboratorRepository.countByUserAndInvitationStatus(user, InvitationStatus.PENDING);
 
-            TaskCount taskCount = new TaskCount(all, done, pending);
+            TaskCount taskCount = new TaskCount(all, done, pending, invitations);
             return ResponseEntity.ok(taskCount);
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -121,7 +124,9 @@ public class TaskService {
                     task.setPriority(updatedTask.getPriority());
                 }
 
-                task.setCompleted(updatedTask.isCompleted());
+                if (updatedTask.getIsCompleted() != null) {
+                    task.setIsCompleted(updatedTask.getIsCompleted());
+                }
 
                 task.setLastUpdated(LocalDateTime.now());
                 task.setUpdatedBy(user);
@@ -132,6 +137,21 @@ public class TaskService {
             } else {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    public ResponseEntity<List<Task>> getInvitations(Long userId) {
+        try {
+            User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id"));
+            List<Task> invitations = collaboratorRepository.findAllByUserAndInvitationStatus(user, InvitationStatus.PENDING)
+                    .stream()
+                    .map(Collaborator::getTask)
+                    .toList();
+
+            return ResponseEntity.ok(invitations);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.internalServerError().build();
