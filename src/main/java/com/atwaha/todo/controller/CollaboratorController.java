@@ -16,7 +16,7 @@ import java.util.List;
 public class CollaboratorController {
     private final CollaboratorService collaboratorService;
 
-    //    Create Collaborator / invite user
+    //    Create Collaborator /
     @PostMapping
     ResponseEntity<Collaborator> createCollaborator(@RequestBody CollaboratorRequest collaborator) {
         return collaboratorService.createCollaborator(collaborator);

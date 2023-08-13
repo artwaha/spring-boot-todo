@@ -24,29 +24,6 @@ public class CollaboratorService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
-    public ResponseEntity<Collaborator> createCollaborator(CollaboratorRequest collaborator) {
-        try {
-            Long taskId = collaborator.getTaskId();
-            User user = userRepository.findById(collaborator.getUserId()).orElseThrow(() -> new EntityNotFoundException("User Id Invalid"));
-            Task task = taskRepository.findById(collaborator.getTaskId()).orElseThrow(() -> new EntityNotFoundException("Task Id Invalid"));
-
-//            User cant be collaborator of a task which he created
-            Task invalidTask = taskRepository.findByIdAndCreatedBy(taskId, user);
-            boolean collaboratorExists = collaboratorRepository.existsByUserAndTask(user, task);
-
-            if (invalidTask != null || collaboratorExists)
-                throw new Exception("Invalid Collaborator: User is the owner of the Task");
-
-            Collaborator newCollaborator = new Collaborator();
-            newCollaborator.setUser(user);
-            newCollaborator.setTask(task);
-            return ResponseEntity.status(HttpStatus.CREATED).body(collaboratorRepository.save(newCollaborator));
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
     public ResponseEntity<List<Collaborator>> getTaskCollaborators(Long taskId, Long userId) {
         try {
             List<Collaborator> collaborators = collaboratorRepository.findAllByTaskAndUserNotAndInvitationStatus(
@@ -80,6 +57,37 @@ public class CollaboratorService {
                     response.isEmpty() ? ResponseEntity.badRequest().build() : ResponseEntity.ok(response);
         } catch (Exception e) {
             System.err.println("Collaborator Service: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    public ResponseEntity<Collaborator> createCollaborator(CollaboratorRequest collaborator) {
+        try {
+            Long taskId = collaborator.getTaskId();
+            User user = userRepository.findById(collaborator.getUserId()).orElseThrow(() -> new EntityNotFoundException("User Id Invalid"));
+            Task task = taskRepository.findById(collaborator.getTaskId()).orElseThrow(() -> new EntityNotFoundException("Task Id Invalid"));
+
+//            User cant be collaborator of a task which he created
+            boolean invalidTask = taskRepository.existsByIdAndCreatedBy(taskId, user);
+            boolean collaboratorExists = collaboratorRepository.existsByUserAndTaskAndInvitationStatus(user, task, InvitationStatus.ACCEPTED);
+
+            if (invalidTask || collaboratorExists) {
+                throw new Exception("Invalid Collaborator: User is the owner of the Task");
+            } else {
+                if (collaboratorRepository.existsByUserAndTaskAndInvitationStatusNot(user, task, InvitationStatus.ACCEPTED)) {
+                    Collaborator coll = collaboratorRepository.findByUserAndTask(user, task);
+                    coll.setInvitationStatus(InvitationStatus.ACCEPTED);
+                    return ResponseEntity.ok(collaboratorRepository.save(coll));
+                } else {
+                    Collaborator newCollaborator = new Collaborator();
+                    newCollaborator.setUser(user);
+                    newCollaborator.setTask(task);
+                    newCollaborator.setInvitationStatus(InvitationStatus.ACCEPTED);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(collaboratorRepository.save(newCollaborator));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
