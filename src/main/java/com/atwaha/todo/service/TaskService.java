@@ -150,7 +150,6 @@ public class TaskService {
                     .stream()
                     .map(Collaborator::getTask)
                     .toList();
-
             return ResponseEntity.ok(invitations);
         } catch (Exception e) {
             System.err.println(e.getMessage());

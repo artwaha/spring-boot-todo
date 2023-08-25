@@ -21,7 +21,7 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private Priority priority = Priority.LOW;
 
-    private Boolean isCompleted;
+    private Boolean isCompleted = false;
     private LocalDateTime createdAt;
 
     @ManyToOne
