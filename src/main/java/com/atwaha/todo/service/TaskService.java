@@ -42,8 +42,10 @@ public class TaskService {
             Long done = taskRepository.countByCreatedByAndIsCompletedTrue(user);
             Long pending = taskRepository.countByCreatedByAndIsCompletedFalse(user);
             Long invitations = collaboratorRepository.countByUserAndInvitationStatus(user, InvitationStatus.PENDING);
+            Long collaborating = collaboratorRepository.countByUserAndInvitationStatus(user, InvitationStatus.ACCEPTED);
+            Long rejected = collaboratorRepository.countByUserAndInvitationStatus(user, InvitationStatus.REJECTED);
 
-            TaskCount taskCount = new TaskCount(all, done, pending, invitations);
+            TaskCount taskCount = new TaskCount(all, done, pending, invitations, collaborating, rejected);
             return ResponseEntity.ok(taskCount);
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -76,6 +78,13 @@ public class TaskService {
         try {
             User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid user Id"));
             List<Task> allTasks = taskRepository.findAllByCreatedBy(user);
+
+//            try {
+//                TimeUnit.SECONDS.sleep(5);
+//            } catch (InterruptedException e) {
+//                // do nothing
+//            }
+
             return ResponseEntity.ok(allTasks);
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -151,6 +160,36 @@ public class TaskService {
                     .map(Collaborator::getTask)
                     .toList();
             return ResponseEntity.ok(invitations);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    public ResponseEntity<List<Task>> getCollaboratingTasks(Long userId) {
+        try {
+            User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id"));
+            List<Task> collaboratingTasks = collaboratorRepository
+                    .findAllByUserAndInvitationStatus(user, InvitationStatus.ACCEPTED)
+                    .stream()
+                    .map(Collaborator::getTask)
+                    .toList();
+            return ResponseEntity.ok(collaboratingTasks);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    public ResponseEntity<List<Task>> getRejectedTasks(Long userId) {
+        try {
+            User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id"));
+            List<Task> collaboratingTasks = collaboratorRepository
+                    .findAllByUserAndInvitationStatus(user, InvitationStatus.REJECTED)
+                    .stream()
+                    .map(Collaborator::getTask)
+                    .toList();
+            return ResponseEntity.ok(collaboratingTasks);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.internalServerError().build();

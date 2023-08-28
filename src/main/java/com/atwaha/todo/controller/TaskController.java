@@ -63,4 +63,15 @@ public class TaskController {
     ResponseEntity<List<Task>> getInvitations(@PathVariable(value = "id") Long userId) {
         return taskService.getInvitations(userId);
     }
+
+    //    Tasks to which user is collaborating
+    @GetMapping("users/{id}/collaborating")
+    ResponseEntity<List<Task>> getCollaboratingTasks(@PathVariable(value = "id") Long userId) {
+        return taskService.getCollaboratingTasks(userId);
+    }
+
+    @GetMapping("users/{id}/rejected")
+    ResponseEntity<List<Task>> getRejectedTasks(@PathVariable(value = "id") Long userId) {
+        return taskService.getRejectedTasks(userId);
+    }
 }

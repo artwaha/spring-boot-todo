@@ -12,4 +12,6 @@ public class TaskCount {
     private Long done;
     private Long pending;
     private Long invitations;
+    private Long collaborating;
+    private Long rejected;
 }
