@@ -66,6 +66,11 @@ public class UserService {
             if (user != null && passwordEncoder.matches(rawPassword, user.getPassword())) {
 //                Convert to UserResponseDTO
                 UserResponseDTO userResponseDTO = createUserResponseDTO(user);
+                //            try {
+//                TimeUnit.SECONDS.sleep(5);
+//            } catch (InterruptedException e) {
+//                // do nothing
+//            }
                 return ResponseEntity.ok(userResponseDTO);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
