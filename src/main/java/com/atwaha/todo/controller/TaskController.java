@@ -17,7 +17,11 @@ import java.util.List;
 public class TaskController {
     private final TaskService taskService;
 
-    //    New Task
+    @GetMapping
+    ResponseEntity<List<Task>> getAllTasks() {
+        return taskService.getAllTasks();
+    }
+
     @PostMapping
     ResponseEntity<Task> createTask(@RequestBody Task task) {
         return taskService.createTask(task);
@@ -73,5 +77,10 @@ public class TaskController {
     @GetMapping("users/{id}/rejected")
     ResponseEntity<List<Task>> getRejectedTasks(@PathVariable(value = "id") Long userId) {
         return taskService.getRejectedTasks(userId);
+    }
+
+    @DeleteMapping("{taskId}/users/{userId}")
+    ResponseEntity<String> deleteTask(@PathVariable Long taskId, @PathVariable Long userId) {
+        return taskService.deleteTask(taskId, userId);
     }
 }

@@ -26,10 +26,15 @@ public class CollaboratorService {
 
     public ResponseEntity<List<Collaborator>> getTaskCollaborators(Long taskId, Long userId) {
         try {
-            List<Collaborator> collaborators = collaboratorRepository.findAllByTaskAndUserNotAndInvitationStatus(
+//            List<Collaborator> collaborators = collaboratorRepository.findAllByTaskAndUserNotAndInvitationStatus(
+//                    taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id")),
+//                    userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id")),
+//                    InvitationStatus.ACCEPTED);
+
+            List<Collaborator> collaborators = collaboratorRepository.findAllByTaskAndUserNotAndInvitationStatusAndIsEnabled(
                     taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id")),
                     userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id")),
-                    InvitationStatus.ACCEPTED);
+                    InvitationStatus.ACCEPTED, true);
             return ResponseEntity.ok(collaborators);
         } catch (Exception e) {
             System.err.println("Collaborator Service: " + e.getMessage());
@@ -47,7 +52,8 @@ public class CollaboratorService {
                 Task task = taskRepository.findById(collaborator.getTaskId()).orElseThrow(() -> new EntityNotFoundException("Task Id Invalid"));
                 Collaborator existingCollaborator = collaboratorRepository.findByUserAndTask(user, task);
                 if (existingCollaborator != null) {
-                    existingCollaborator.setInvitationStatus(InvitationStatus.REJECTED);
+//                    existingCollaborator.setInvitationStatus(InvitationStatus.REJECTED);
+                    existingCollaborator.setIsEnabled(false);
                     Collaborator updatedCollaborator = collaboratorRepository.save(existingCollaborator);
                     response.add(updatedCollaborator);
                 }
@@ -69,10 +75,10 @@ public class CollaboratorService {
 
 //            User cant be collaborator of a task which he created
             boolean invalidTask = taskRepository.existsByIdAndCreatedBy(taskId, user);
-            boolean collaboratorExists = collaboratorRepository.existsByUserAndTaskAndInvitationStatus(user, task, InvitationStatus.ACCEPTED);
+            boolean collaboratorExists = collaboratorRepository.existsByUserAndTaskAndInvitationStatusAndIsEnabled(user, task, InvitationStatus.ACCEPTED, true);
 
             if (invalidTask || collaboratorExists) {
-                throw new Exception("Invalid Collaborator: User is the owner of the Task");
+                throw new Exception("Invalid Collaborator: User is the owner of the Task- or Already collaborating");
             } else {
                 if (collaboratorRepository.existsByUserAndTaskAndInvitationStatusNot(user, task, InvitationStatus.ACCEPTED)) {
                     Collaborator coll = collaboratorRepository.findByUserAndTask(user, task);

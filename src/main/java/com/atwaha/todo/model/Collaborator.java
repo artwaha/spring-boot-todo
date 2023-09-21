@@ -22,4 +22,6 @@ public class Collaborator {
 
     @Enumerated(EnumType.STRING)
     private InvitationStatus invitationStatus = InvitationStatus.PENDING;
+
+    private Boolean isEnabled = true;
 }

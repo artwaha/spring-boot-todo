@@ -11,7 +11,10 @@ import java.util.List;
 public interface CollaboratorRepository extends JpaRepository<Collaborator, Long> {
     boolean existsByUserAndTask(User user, Task task);
 
-    List<Collaborator> findAllByTaskAndUserNotAndInvitationStatus(Task task, User user, InvitationStatus invitationStatus);
+    boolean existsByUserAndTaskAndIsEnabled(User user, Task task, boolean status);
+
+    //        List<Collaborator> findAllByTaskAndUserNotAndInvitationStatus(Task task, User user, InvitationStatus invitationStatus);
+    List<Collaborator> findAllByTaskAndUserNotAndInvitationStatusAndIsEnabled(Task invalidTaskId, User invalidUserId, InvitationStatus invitationStatus, boolean status);
 
     boolean existsByTask(Task task);
 
@@ -21,7 +24,14 @@ public interface CollaboratorRepository extends JpaRepository<Collaborator, Long
 
     List<Collaborator> findAllByUserAndInvitationStatus(User user, InvitationStatus invitationStatus);
 
-    boolean existsByUserAndTaskAndInvitationStatus(User user, Task task, InvitationStatus invitationStatus);
+    List<Collaborator> findAllByUserAndInvitationStatusAndIsEnabled(User user, InvitationStatus invitationStatus, boolean status);
+
+//    boolean existsByUserAndTaskAndInvitationStatus(User user, Task task, InvitationStatus invitationStatus);
+
+    boolean existsByUserAndTaskAndInvitationStatusAndIsEnabled(User user, Task task, InvitationStatus invitationStatus, boolean status);
 
     boolean existsByUserAndTaskAndInvitationStatusNot(User user, Task task, InvitationStatus invitationStatus);
+
+
+    Long countByUserAndInvitationStatusAndIsEnabled(User user, InvitationStatus invitationStatus, boolean status);
 }

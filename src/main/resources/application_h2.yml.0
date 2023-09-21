@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./src/main/resources/database/h2_file-todo-db
+    #    url: jdbc:h2:mem:./src/main/resources/database/h2_file-todo-db
+    driver-class-name: org.h2.Driver
+    username: mustard
+    password: 206207
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true # Format SQL statements in logs
+        use_sql_comments: true # Include SQL comments in logs
+  security:
+    user:
+      name: mustard
+      password: 206207

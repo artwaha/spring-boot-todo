@@ -95,10 +95,15 @@ public class UserService {
 
     public ResponseEntity<List<User>> getPendingInvitations(Long userId, Long taskId) {
         try {
-            List<Collaborator> pendingCollaborators = collaboratorRepository.findAllByTaskAndUserNotAndInvitationStatus(
+//            List<Collaborator> pendingCollaborators = collaboratorRepository.findAllByTaskAndUserNotAndInvitationStatus(
+//                    taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id")),
+//                    userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id")),
+//                    InvitationStatus.PENDING);
+//TODO HERE
+            List<Collaborator> pendingCollaborators = collaboratorRepository.findAllByTaskAndUserNotAndInvitationStatusAndIsEnabled(
                     taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Invalid Task Id")),
                     userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Invalid User Id")),
-                    InvitationStatus.PENDING);
+                    InvitationStatus.PENDING, true);
 
             if (pendingCollaborators.isEmpty()) {
                 return ResponseEntity.ok(new ArrayList<>());
@@ -126,7 +131,7 @@ public class UserService {
                 usersToInvite = userRepository
                         .findAllByIdNot(userId)
                         .stream()
-                        .filter(user -> !collaboratorRepository.existsByUserAndTask(user, task))
+                        .filter(user -> !collaboratorRepository.existsByUserAndTask(user, task) || collaboratorRepository.existsByUserAndTaskAndIsEnabled(user, task, false))
                         .toList();
             } else {
                 usersToInvite = userRepository.findAllByIdNot(userId);
