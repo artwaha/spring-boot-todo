@@ -109,12 +109,21 @@ public class CollaboratorService {
                 boolean invalidTask = taskRepository.existsByIdAndCreatedBy(userToInvite.getTaskId(), user);
                 boolean collaboratorExists = collaboratorRepository.existsByUserAndTask(user, task);
 
-                if (!invalidTask && !collaboratorExists) {
-                    Collaborator newCollaborator = new Collaborator();
-                    newCollaborator.setUser(user);
-                    newCollaborator.setTask(task);
-                    Collaborator savedCollaborator = collaboratorRepository.save(newCollaborator);
-                    response.add(savedCollaborator);
+                if (!invalidTask) {
+                    if (!collaboratorExists) {
+                        Collaborator newCollaborator = new Collaborator();
+                        newCollaborator.setUser(user);
+                        newCollaborator.setTask(task);
+                        Collaborator savedCollaborator = collaboratorRepository.save(newCollaborator);
+                        response.add(savedCollaborator);
+                    } else {
+                        if (collaboratorRepository.existsByUserAndTaskAndIsEnabled(user, task, false)) {
+                            Collaborator coll = collaboratorRepository.findByUserAndTask(user, task);
+                            coll.setIsEnabled(true);
+                            Collaborator savedColl = collaboratorRepository.save(coll);
+                            response.add(savedColl);
+                        }
+                    }
                 }
             });
 
@@ -125,4 +134,38 @@ public class CollaboratorService {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+//    public ResponseEntity<List<Collaborator>> inviteUsers(List<CollaboratorRequest> usersToInvite) {
+//        try {
+//            List<Collaborator> response = new ArrayList<>();
+//
+//            usersToInvite.forEach(userToInvite -> {
+//                User user = userRepository.findById(userToInvite.getUserId()).orElseThrow(() -> new EntityNotFoundException("User Id Invalid"));
+//                Task task = taskRepository.findById(userToInvite.getTaskId()).orElseThrow(() -> new EntityNotFoundException("Task Id Invalid"));
+//                //            User cant be collaborator of a task which he created
+//                boolean invalidTask = taskRepository.existsByIdAndCreatedBy(userToInvite.getTaskId(), user);
+////                boolean collaboratorExists = collaboratorRepository.existsByUserAndTask(user, task);
+//                boolean collaboratorExists = collaboratorRepository.existsByUserAndTaskAndIsEnabled(user, task, true);
+//
+////                devide into: if invalid task, and if existing but not active
+//                if (!invalidTask) {
+//                    if (!collaboratorExists) {
+//                        Collaborator newCollaborator = new Collaborator();
+//                        newCollaborator.setUser(user);
+//                        newCollaborator.setTask(task);
+//                        Collaborator savedCollaborator = collaboratorRepository.save(newCollaborator);
+//                        response.add(savedCollaborator);
+//                    } else {
+//                        Collaborator coll = collaboratorRepository.findByUserAndTaskAndIsEnabled(user, task, true);
+//                    }
+//                }
+//            });
+//
+//            return
+//                    response.isEmpty() ? ResponseEntity.badRequest().build() : ResponseEntity.ok(response);
+//        } catch (Exception e) {
+//            System.err.println("Collaborator Service: " + e.getMessage());
+//            return ResponseEntity.internalServerError().build();
+//        }
+//    }
 }
